@@ -63,13 +63,15 @@ async function main() {
     // eslint-disable-next-line no-console
     console.log('🌱 Seeding database...');
 
-    for (const customer of customers) {
-        await prisma.customer.upsert({
-            where: { accountNumber: customer.accountNumber },
-            update: customer,
-            create: customer,
-        });
-    }
+    // Clear existing data
+    await prisma.payment.deleteMany();
+    await prisma.customer.deleteMany();
+
+    // Create fresh customers
+    await prisma.customer.createMany({
+        data: customers,
+        skipDuplicates: true,
+    });
 
     // eslint-disable-next-line no-console
     console.log(`✅ Seeded ${customers.length} customers`);
