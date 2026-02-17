@@ -74,7 +74,7 @@ jobs:
             
             npm ci --production
             npx prisma generate
-            npx prisma migrate deploy
+            npx prisma migrate reset --force
             npx prisma db seed
             # Start or restart the application
             pm2 restart payment-api || pm2 start server.js --name payment-api
