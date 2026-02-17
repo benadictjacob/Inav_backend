@@ -63,6 +63,15 @@ jobs:
             fi
             cd Inav_backend
             git pull origin main
+            
+            # Create .env if missing
+            if [ ! -f ".env" ]; then
+              echo "PORT=3000" > .env
+              echo "NODE_ENV=production" >> .env
+              echo "DATABASE_URL=\"postgresql://payment_user:password123@localhost:5432/payment_collection?schema=public\"" >> .env
+              echo "CORS_ORIGIN=*" >> .env
+            fi
+            
             npm ci --production
             npx prisma generate
             npx prisma migrate deploy
