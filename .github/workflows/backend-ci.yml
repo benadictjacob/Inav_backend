@@ -57,10 +57,15 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/payment-collection-backend
+            # Clone repo if it doesn't exist, otherwise pull latest
+            if [ ! -d "Inav_backend" ]; then
+              git clone https://github.com/benadictjacob/Inav_backend.git
+            fi
+            cd Inav_backend
             git pull origin main
             npm ci --production
             npx prisma generate
             npx prisma migrate deploy
+            # Start or restart the application
             pm2 restart payment-api || pm2 start server.js --name payment-api
             pm2 save
