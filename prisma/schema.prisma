@@ -1,0 +1,50 @@
+// ============================================
+// Prisma Schema — Payment Collection App
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Represents a loan customer with their account details
+model Customer {
+  id                 Int       @id @default(autoincrement())
+  accountNumber      String    @unique @map("account_number")
+  issueDate          DateTime  @map("issue_date")
+  interestRate       Float     @map("interest_rate")
+  tenure             Int       // tenure in months
+  monthlyInstallment Float     @map("monthly_installment") // The standard 1/12th part
+  emiDue             Float     @map("emi_due")             // Amount due for the current nextDueDate
+  totalBalance       Float     @map("total_balance")       // Total remaining debt
+  nextDueDate        DateTime  @map("next_due_date")       // Current installment deadline
+  lastInterestCalc   DateTime? @map("last_interest_calc")  // Track when penalties were last applied
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  payments Payment[]
+
+  @@map("customers")
+}
+
+/// Represents a payment made against a customer's loan account
+model Payment {
+  id            Int      @id @default(autoincrement())
+  transactionId String   @unique @default(uuid()) @map("transaction_id")
+  customerId    Int      @map("customer_id")
+  paymentDate   DateTime @default(now()) @map("payment_date")
+  amount        Float
+  status        String   @default("success") // success | failed | pending
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("payments")
+}
